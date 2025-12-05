@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');
 
+/* ===== Contenedor principal ===== */
 .valorant-timer {
   width: 350px;
   padding: 20px;
@@ -12,7 +13,7 @@
   text-transform: uppercase;
 }
 
-/* Header */
+/* ===== Header ===== */
 .timer-header {
   text-align: center;
   margin-bottom: 10px;
@@ -25,7 +26,7 @@
   text-shadow: 0 0 8px rgba(180, 0, 255, 0.5);
 }
 
-/* Display del contador */
+/* ===== Display del timer ===== */
 .timer-display {
   font-size: 48px;
   font-weight: 700;
@@ -34,15 +35,15 @@
   text-shadow: 0 0 15px rgba(150, 80, 255, 0.9);
 }
 
-/* Footer y controles */
+/* ===== Footer y controles ===== */
 .timer-footer {
   margin-top: 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 10px; /* separación entre inputs y botón */
 }
 
-/* Grupo de inputs */
+/* Grupo de input (label + input) */
 .input-group {
   display: flex;
   flex-direction: column;
@@ -58,7 +59,7 @@
   padding: 6px 10px;
   border: 2px solid #8b5cf6;
   border-radius: 6px;
-  background: rgba(40,0,70,0.5);
+  background: rgba(40, 0, 70, 0.5);
   color: #fff;
   font-size: 14px;
   font-family: "Rajdhani", sans-serif;
@@ -68,10 +69,10 @@
 
 .input-group input:focus {
   border-color: #c084fc;
-  box-shadow: 0 0 8px rgba(200,100,255,0.6);
+  box-shadow: 0 0 8px rgba(200, 100, 255, 0.6);
 }
 
-/* Botón iniciar */
+/* Botón de iniciar */
 #start-timer {
   margin-top: 6px;
   padding: 8px 12px;
@@ -87,13 +88,12 @@
 
 #start-timer:hover {
   background: #c084fc;
-  box-shadow: 0 0 12px rgba(200,100,255,0.6);
+  box-shadow: 0 0 12px rgba(200, 100, 255, 0.6);
 }
 
-/* Subtexto opcional (si quieres agregar info) */
+/* ===== Subtexto footer opcional ===== */
 .timer-subtext {
   font-size: 14px;
   color: #b794f4;
   text-shadow: 0 0 6px rgba(160, 80, 255, 0.6);
 }
-
