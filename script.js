@@ -20,6 +20,9 @@ function startCountdown(hours, minutes, seconds) {
   const display = document.getElementById("timer-display");
   display.textContent = formatTime(totalSeconds);
 
+  // Ocultar los controles al iniciar
+  document.getElementById("timer-controls").style.display = "none";
+
   interval = setInterval(() => {
     totalSeconds--;
 
@@ -42,3 +45,4 @@ document.getElementById("start-timer").addEventListener("click", () => {
   if (hours === 0 && minutes === 0 && seconds === 0) return; // evitar iniciar con 0
   startCountdown(hours, minutes, seconds);
 });
+
