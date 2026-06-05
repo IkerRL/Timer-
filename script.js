@@ -1,6 +1,6 @@
 const TWITCH_CONFIG = {
-    canal:   '#ikeer_rl', // ¡Obligatorio el '#' para que tmi.js funcione!
-    comando: '!voto',     // Comando exacto
+    canal:   'ikeer_rl', // Tu canal en minúsculas
+    comando: '!voto',    // Comando exacto
 };
 
 let totalSeconds;
@@ -32,18 +32,49 @@ function startCountdown() {
   }, 1000);
 }
 
-// Conexión limpia y anónima a Twitch
-const client = new tmi.Client({
-  options: { debug: true }, // Cambiado a true para que puedas ver los logs de conexión en la consola
-  channels: [TWITCH_CONFIG.canal]
-});
+// CONEXIÓN DIRECTA POR WEBSOCKETS (Sin librerías y 100% anónima)
+function conectarTwitch() {
+    // Generamos un nombre de usuario fantasma para conectar sin contraseña (modo solo lectura)
+    const usuarioAnonimo = 'justinfan' + Math.floor(10000 + Math.random() * 90000);
+    const twitchWS = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
 
-client.connect().catch(err => console.error("Error conectando a Twitch:", err));
+    twitchWS.onopen = function() {
+        twitchWS.send('PASS kappa'); // Contraseña genérica para el modo anónimo
+        twitchWS.send('NICK ' + usuarioAnonimo);
+        twitchWS.send('JOIN #' + TWITCH_CONFIG.canal.toLowerCase());
+        console.log("Conectado al chat de Twitch de forma segura y anónima");
+    };
 
-// Leer el chat
-client.on('message', (channel, tags, message, self) => {
-  // Pasamos todo a minúsculas para evitar fallos si escriben !Voto o !VOTO
-  if (message.toLowerCase().trim() === TWITCH_CONFIG.comando.toLowerCase()) {
-    startCountdown();
-  }
-});
+    twitchWS.onmessage = function(event) {
+        const line = event.data;
+        
+        // Responder al PING de Twitch para que no nos eche por inactividad
+        if (line.includes('PING')) { 
+            twitchWS.send('PONG :tmi.twitch.tv'); 
+        }
+        
+        // Filtrar y leer los mensajes del chat
+        const match = line.match(/:(\w+)!\w+@\w+\.tmi\.twitch\.tv PRIVMSG #\w+ :(.+)/);
+        if (match) {
+            const mensaje = match[2].trim().toLowerCase();
+            
+            // Si el mensaje es exactamente tu comando, inicia el tiempo
+            if (mensaje === TWITCH_CONFIG.comando.toLowerCase()) {
+                startCountdown();
+            }
+        }
+    };
+
+    twitchWS.onerror = function(error) {
+        console.error("Error en la conexión:", error);
+    };
+
+    // Si por algún motivo se cae la conexión, se reconecta automáticamente a los 5 segundos
+    twitchWS.onclose = function() {
+        console.log("Conexión cerrada. Reconectando...");
+        setTimeout(conectarTwitch, 5000);
+    };
+}
+
+// Iniciamos la escucha del chat al cargar la página
+conectarTwitch();
