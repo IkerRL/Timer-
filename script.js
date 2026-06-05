@@ -1,6 +1,8 @@
 const TWITCH_CONFIG = {
-    canal:   'ikeer_rl',         // Tu canal en minúsculas
-    comando: '!timer',            // Comando para empezar
+    // AHORA ES UNA LISTA: Añade aquí todos los canales que quieras escuchar (en minúsculas)
+    canales: ['ikeer_rl', 'makacagotica'], 
+    
+    comando: '!voto',            // Comando para empezar
     comandoReset: '!reset',      // Comando para reiniciar
     usuariosPermitidos: ['ikeer_rl', 'valeria', 'cris', 'luve', 'makacagotica'] // Usuarios autorizados
 };
@@ -9,7 +11,6 @@ let totalSeconds;
 let interval;
 
 // CONFIGURACIÓN DE AUDIO
-// Asegúrate de subir estos dos archivos con estos nombres exactos a tu GitHub
 const audioInicio = new Audio('inicio.mp3');
 const audioFin = new Audio('fin.mp3');
 
@@ -23,11 +24,9 @@ function startCountdown() {
   clearInterval(interval); 
   totalSeconds = 15; 
 
-  // Reproducir sonido de inicio (lo reiniciamos a 0 por si se pulsa varias veces)
   audioInicio.currentTime = 0;
   audioInicio.play().catch(err => console.log("Audio bloqueado por el navegador hasta que interactúes con la página:", err));
   
-  // Apagar el sonido de fin por si seguía sonando de antes
   audioFin.pause();
   audioFin.currentTime = 0;
 
@@ -41,7 +40,6 @@ function startCountdown() {
       clearInterval(interval);
       display.textContent = "00:00";
       
-      // Reproducir sonido de fin al terminar la cuenta atrás
       audioFin.currentTime = 0;
       audioFin.play().catch(err => console.log("Audio bloqueado:", err));
       
@@ -55,7 +53,6 @@ function startCountdown() {
 function resetTimer() {
   clearInterval(interval);
   
-  // Detener y reiniciar todos los audios inmediatamente
   audioInicio.pause();
   audioInicio.currentTime = 0;
   audioFin.pause();
@@ -66,7 +63,7 @@ function resetTimer() {
   console.log("Temporizador reseteado y audios detenidos.");
 }
 
-// CONEXIÓN DIRECTA POR WEBSOCKETS (Anónima y segura)
+// CONEXIÓN MULTICANAL POR WEBSOCKETS
 function conectarTwitch() {
     const usuarioAnonimo = 'justinfan' + Math.floor(10000 + Math.random() * 90000);
     const twitchWS = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
@@ -74,8 +71,13 @@ function conectarTwitch() {
     twitchWS.onopen = function() {
         twitchWS.send('PASS kappa');
         twitchWS.send('NICK ' + usuarioAnonimo);
-        twitchWS.send('JOIN #' + TWITCH_CONFIG.canal.toLowerCase());
-        console.log("Conectado al chat de Twitch. Sistema de sonido listo.");
+        
+        // NUEVO: Nos unimos a cada uno de los canales configurados en la lista
+        TWITCH_CONFIG.canales.forEach(canal => {
+            twitchWS.send('JOIN #' + canal.toLowerCase().trim());
+        });
+        
+        console.log("Conectado con éxito a los canales: " + TWITCH_CONFIG.canales.join(', '));
     };
 
     twitchWS.onmessage = function(event) {
@@ -85,6 +87,7 @@ function conectarTwitch() {
             twitchWS.send('PONG :tmi.twitch.tv'); 
         }
         
+        // El lector detectará los mensajes sin importar de cuál de los dos canales provengan
         const match = line.match(/:(\w+)!\w+@\w+\.tmi\.twitch\.tv PRIVMSG #\w+ :(.+)/);
         if (match) {
             const usuario = match[1].toLowerCase();
@@ -109,6 +112,7 @@ function conectarTwitch() {
     };
 
     twitchWS.onclose = function() {
+        console.log("Conexión cerrada. Reconectando en 5 segundos...");
         setTimeout(conectarTwitch, 5000);
     };
 }
