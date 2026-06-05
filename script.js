@@ -1,6 +1,6 @@
 const TWITCH_CONFIG = {
     canal:   'ikeer_rl',         // Tu canal en minúsculas
-    comando: '!voto',            // Comando para empezar
+    comando: '!timer',            // Comando para empezar
     comandoReset: '!reset',      // Comando para reiniciar
     usuariosPermitidos: ['ikeer_rl', 'valeria', 'cris', 'luve', 'makacagotica'] // Usuarios autorizados
 };
