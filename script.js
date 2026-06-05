@@ -1,5 +1,5 @@
 const TWITCH_CONFIG = {
-    canal:   'makacagotica', // Tu canal en minúsculas
+    canal:   'ikeer_rl', // Tu canal en minúsculas
     comando: '!voto',        // Comando exacto
 };
 
