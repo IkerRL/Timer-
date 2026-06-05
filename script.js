@@ -1,25 +1,25 @@
 // Tu configuración personalizada
 const TWITCH_CONFIG = {
     canal:   'makacagotica',       
-    token:   'oauth:hhqcdtugdwdw2ivhnhaio6jr5zy29g', 
+    // Limpiamos el token para dejar solo los caracteres (sin el "oauth:")
+    token:   'hhqcdtugdwdw2ivhnhaio6jr5zy29g', 
     nick:    'makacagotica',       
-    comando: '!voto',               
+    comando: '!timer',               
 };
 
 let totalSeconds;
 let interval;
 
-// Formatea el tiempo en MM:SS
 function formatTime(sec) {
   const m = Math.floor(sec / 60);
   const s = sec % 60;
   return String(m).padStart(2, '0') + ":" + String(s).padStart(2, '0');
 }
 
-// Inicia la cuenta regresiva de 15 segundos
 function startCountdown() {
-  clearInterval(interval); // Detiene cualquier cuenta anterior que esté activa
-  totalSeconds = 15; // Fijado a 15 segundos
+  console.log("¡Iniciando el temporizador de 15 segundos!");
+  clearInterval(interval); 
+  totalSeconds = 15; 
 
   const display = document.getElementById("timer-display");
   display.textContent = formatTime(totalSeconds);
@@ -37,25 +37,27 @@ function startCountdown() {
   }, 1000);
 }
 
-// Configuración de tmi.js usando tus credenciales
+// Configuración corregida para tmi.js
 const client = new tmi.Client({
-  options: { debug: false },
+  options: { debug: true }, // Activamos el debug para ver qué pasa en la consola
   identity: {
     username: TWITCH_CONFIG.nick,
-    password: TWITCH_CONFIG.token
+    // Aseguramos que lleve el prefijo correcto internamente
+    password: `oauth:${TWITCH_CONFIG.token}` 
   },
   channels: [TWITCH_CONFIG.canal]
 });
 
-// Conectar a los servidores de Twitch
-client.connect().catch(err => console.error("Error al conectar a Twitch:", err));
+// Conectar y avisar en consola
+client.connect()
+  .then(() => console.log(`%cConectado exitosamente al chat de ${TWITCH_CONFIG.canal}`, "color: green; font-weight: bold;"))
+  .catch(err => console.error("Error crítico al conectar a Twitch:", err));
 
-// Escuchar los mensajes del chat en tiempo real
+// Escuchar los mensajes del chat
 client.on('message', (channel, tags, message, self) => {
-  // Opcional: Ignorar mensajes del propio bot/cuenta si fuera necesario
-  // if (self) return;
+  console.log(`Mensaje recibido de ${tags['display-name']}: ${message}`);
 
-  // Compara el mensaje del chat con tu comando (ignora mayúsculas/minúsculas y espacios extra)
+  // Compara el comando
   if (message.toLowerCase().trim() === TWITCH_CONFIG.comando.toLowerCase()) {
     startCountdown();
   }
