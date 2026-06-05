@@ -2,7 +2,7 @@
 const TWITCH_CONFIG = {
     canal:   'makacagotica',       
     // Limpiamos el token para dejar solo los caracteres (sin el "oauth:")
-    token:   'hhqcdtugdwdw2ivhnhaio6jr5zy29g', 
+    token:   'qesfuu0cdx4ca7mj5jqk2h6u0qayif', 
     nick:    'makacagotica',       
     comando: '!timer',               
 };
