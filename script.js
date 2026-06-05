@@ -1,6 +1,6 @@
 // Tu configuración optimizada (sin tokens problemáticos)
 const TWITCH_CONFIG = {
-    canal:   'makacagotica', // Tu canal en minúsculas
+    canal:   'ikeer_rl', // Tu canal en minúsculas
     comando: '!voto',        // El comando que activará el timer
 };
 
