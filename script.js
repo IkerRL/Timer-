@@ -1,14 +1,17 @@
 const TWITCH_CONFIG = {
     canal:   'ikeer_rl',         // Tu canal en minúsculas
     comando: '!voto',            // Comando para empezar
-    comandoReset: '!reset',      // NUEVO: Comando para reiniciar
-    
-    // NUEVO: Lista de usuarios permitidos (¡Escríbelos en minúsculas!)
-    usuariosPermitidos: ['ikeer_rl', 'valeria', 'cris', 'luve', 'makacagotica'] 
+    comandoReset: '!reset',      // Comando para reiniciar
+    usuariosPermitidos: ['ikeer_rl', 'valeria', 'cris', 'luve', 'makacagotica'] // Usuarios autorizados
 };
 
 let totalSeconds;
 let interval;
+
+// CONFIGURACIÓN DE AUDIO
+// Asegúrate de subir estos dos archivos con estos nombres exactos a tu GitHub
+const audioInicio = new Audio('inicio.mp3');
+const audioFin = new Audio('fin.mp3');
 
 function formatTime(sec) {
   const m = Math.floor(sec / 60);
@@ -20,6 +23,14 @@ function startCountdown() {
   clearInterval(interval); 
   totalSeconds = 15; 
 
+  // Reproducir sonido de inicio (lo reiniciamos a 0 por si se pulsa varias veces)
+  audioInicio.currentTime = 0;
+  audioInicio.play().catch(err => console.log("Audio bloqueado por el navegador hasta que interactúes con la página:", err));
+  
+  // Apagar el sonido de fin por si seguía sonando de antes
+  audioFin.pause();
+  audioFin.currentTime = 0;
+
   const display = document.getElementById("timer-display");
   display.textContent = formatTime(totalSeconds);
 
@@ -29,6 +40,11 @@ function startCountdown() {
     if (totalSeconds < 0) {
       clearInterval(interval);
       display.textContent = "00:00";
+      
+      // Reproducir sonido de fin al terminar la cuenta atrás
+      audioFin.currentTime = 0;
+      audioFin.play().catch(err => console.log("Audio bloqueado:", err));
+      
       return;
     }
 
@@ -36,12 +52,18 @@ function startCountdown() {
   }, 1000);
 }
 
-// NUEVO: Función para resetear el temporizador al estado inicial
 function resetTimer() {
   clearInterval(interval);
+  
+  // Detener y reiniciar todos los audios inmediatamente
+  audioInicio.pause();
+  audioInicio.currentTime = 0;
+  audioFin.pause();
+  audioFin.currentTime = 0;
+
   const display = document.getElementById("timer-display");
-  display.textContent = formatTime(15); // Lo vuelve a dejar en 00:15
-  console.log("Temporizador reseteado por un administrador.");
+  display.textContent = formatTime(15); 
+  console.log("Temporizador reseteado y audios detenidos.");
 }
 
 // CONEXIÓN DIRECTA POR WEBSOCKETS (Anónima y segura)
@@ -53,7 +75,7 @@ function conectarTwitch() {
         twitchWS.send('PASS kappa');
         twitchWS.send('NICK ' + usuarioAnonimo);
         twitchWS.send('JOIN #' + TWITCH_CONFIG.canal.toLowerCase());
-        console.log("Conectado al chat de Twitch. Control de acceso activado.");
+        console.log("Conectado al chat de Twitch. Sistema de sonido listo.");
     };
 
     twitchWS.onmessage = function(event) {
@@ -65,26 +87,18 @@ function conectarTwitch() {
         
         const match = line.match(/:(\w+)!\w+@\w+\.tmi\.twitch\.tv PRIVMSG #\w+ :(.+)/);
         if (match) {
-            const usuario = match[1].toLowerCase(); // Guardamos quién envió el mensaje
+            const usuario = match[1].toLowerCase();
             const mensaje = match[2].trim().toLowerCase();
             
-            // 1. VALIDAR COMANDO !VOTO
             if (mensaje === TWITCH_CONFIG.comando.toLowerCase()) {
-                // Comprobamos si el usuario está en la lista de permitidos
                 if (TWITCH_CONFIG.usuariosPermitidos.includes(usuario)) {
                     startCountdown();
-                } else {
-                    console.log(`Usuario no autorizado intentó usar !voto: ${usuario}`);
                 }
             }
             
-            // 2. VALIDAR COMANDO !RESET
             if (mensaje === TWITCH_CONFIG.comandoReset.toLowerCase()) {
-                // Comprobamos si el usuario está en la lista de permitidos
                 if (TWITCH_CONFIG.usuariosPermitidos.includes(usuario)) {
                     resetTimer();
-                } else {
-                    console.log(`Usuario no autorizado intentó usar !reset: ${usuario}`);
                 }
             }
         }
@@ -95,7 +109,6 @@ function conectarTwitch() {
     };
 
     twitchWS.onclose = function() {
-        console.log("Conexión cerrada. Reconectando...");
         setTimeout(conectarTwitch, 5000);
     };
 }
