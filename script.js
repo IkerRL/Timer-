@@ -1,10 +1,10 @@
 const TWITCH_CONFIG = {
     // AHORA ES UNA LISTA: Añade aquí todos los canales que quieras escuchar (en minúsculas)
-    canales: ['ikeer_rl', 'makacagotica'], 
+    canales: ['trollantsb', 'makacagotica'], 
     
     comando: '!timer',            // Comando para empezar
     comandoReset: '!reset',      // Comando para reiniciar
-    usuariosPermitidos: ['ikeer_rl', 'valeria', 'cris', 'luve', 'makacagotica'] // Usuarios autorizados
+    usuariosPermitidos: ['ikeer_rl', 'panaoso', 'trollantsb', 'makacagotica'] // Usuarios autorizados
 };
 
 let totalSeconds;
