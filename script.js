@@ -1,6 +1,10 @@
 const TWITCH_CONFIG = {
-    canal:   'ikeer_rl', // Tu canal en minúsculas
-    comando: '!voto',    // Comando exacto
+    canal:   'ikeer_rl',         // Tu canal en minúsculas
+    comando: '!voto',            // Comando para empezar
+    comandoReset: '!reset',      // NUEVO: Comando para reiniciar
+    
+    // NUEVO: Lista de usuarios permitidos (¡Escríbelos en minúsculas!)
+    usuariosPermitidos: ['ikeer_rl', 'valeria', 'cris', 'luve', 'makacagotica'] 
 };
 
 let totalSeconds;
@@ -32,35 +36,56 @@ function startCountdown() {
   }, 1000);
 }
 
-// CONEXIÓN DIRECTA POR WEBSOCKETS (Sin librerías y 100% anónima)
+// NUEVO: Función para resetear el temporizador al estado inicial
+function resetTimer() {
+  clearInterval(interval);
+  const display = document.getElementById("timer-display");
+  display.textContent = formatTime(15); // Lo vuelve a dejar en 00:15
+  console.log("Temporizador reseteado por un administrador.");
+}
+
+// CONEXIÓN DIRECTA POR WEBSOCKETS (Anónima y segura)
 function conectarTwitch() {
-    // Generamos un nombre de usuario fantasma para conectar sin contraseña (modo solo lectura)
     const usuarioAnonimo = 'justinfan' + Math.floor(10000 + Math.random() * 90000);
     const twitchWS = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
 
     twitchWS.onopen = function() {
-        twitchWS.send('PASS kappa'); // Contraseña genérica para el modo anónimo
+        twitchWS.send('PASS kappa');
         twitchWS.send('NICK ' + usuarioAnonimo);
         twitchWS.send('JOIN #' + TWITCH_CONFIG.canal.toLowerCase());
-        console.log("Conectado al chat de Twitch de forma segura y anónima");
+        console.log("Conectado al chat de Twitch. Control de acceso activado.");
     };
 
     twitchWS.onmessage = function(event) {
         const line = event.data;
         
-        // Responder al PING de Twitch para que no nos eche por inactividad
         if (line.includes('PING')) { 
             twitchWS.send('PONG :tmi.twitch.tv'); 
         }
         
-        // Filtrar y leer los mensajes del chat
         const match = line.match(/:(\w+)!\w+@\w+\.tmi\.twitch\.tv PRIVMSG #\w+ :(.+)/);
         if (match) {
+            const usuario = match[1].toLowerCase(); // Guardamos quién envió el mensaje
             const mensaje = match[2].trim().toLowerCase();
             
-            // Si el mensaje es exactamente tu comando, inicia el tiempo
+            // 1. VALIDAR COMANDO !VOTO
             if (mensaje === TWITCH_CONFIG.comando.toLowerCase()) {
-                startCountdown();
+                // Comprobamos si el usuario está en la lista de permitidos
+                if (TWITCH_CONFIG.usuariosPermitidos.includes(usuario)) {
+                    startCountdown();
+                } else {
+                    console.log(`Usuario no autorizado intentó usar !voto: ${usuario}`);
+                }
+            }
+            
+            // 2. VALIDAR COMANDO !RESET
+            if (mensaje === TWITCH_CONFIG.comandoReset.toLowerCase()) {
+                // Comprobamos si el usuario está en la lista de permitidos
+                if (TWITCH_CONFIG.usuariosPermitidos.includes(usuario)) {
+                    resetTimer();
+                } else {
+                    console.log(`Usuario no autorizado intentó usar !reset: ${usuario}`);
+                }
             }
         }
     };
@@ -69,12 +94,10 @@ function conectarTwitch() {
         console.error("Error en la conexión:", error);
     };
 
-    // Si por algún motivo se cae la conexión, se reconecta automáticamente a los 5 segundos
     twitchWS.onclose = function() {
         console.log("Conexión cerrada. Reconectando...");
         setTimeout(conectarTwitch, 5000);
     };
 }
 
-// Iniciamos la escucha del chat al cargar la página
 conectarTwitch();
