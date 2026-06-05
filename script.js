@@ -1,6 +1,6 @@
 const TWITCH_CONFIG = {
-    canal:   'ikeer_rl', // Tu canal en minúsculas
-    comando: '!voto',        // Comando exacto
+    canal:   '#ikeer_rl', // ¡Obligatorio el '#' para que tmi.js funcione!
+    comando: '!voto',     // Comando exacto
 };
 
 let totalSeconds;
@@ -34,7 +34,7 @@ function startCountdown() {
 
 // Conexión limpia y anónima a Twitch
 const client = new tmi.Client({
-  options: { debug: false },
+  options: { debug: true }, // Cambiado a true para que puedas ver los logs de conexión en la consola
   channels: [TWITCH_CONFIG.canal]
 });
 
