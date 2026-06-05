@@ -2,7 +2,7 @@ let totalSeconds;
 let interval;
 
 // Tu canal de Twitch (escríbelo en minúsculas)
-const TWITCH_CHANNEL = "TU_NOMBRE_DE_USUARIO"; 
+const TWITCH_CHANNEL = "makacagotica"; 
 
 // Formato más corto (MM:SS) ya que solo son 15 segundos
 function formatTime(sec) {
