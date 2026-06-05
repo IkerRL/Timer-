@@ -4,7 +4,7 @@ const TWITCH_CONFIG = {
     
     comando: '!timer',            // Comando para empezar
     comandoReset: '!reset',      // Comando para reiniciar
-    usuariosPermitidos: ['ikeer_rl', 'panaoso', 'trollantsb', 'makacagotica'] // Usuarios autorizados
+    usuariosPermitidos: ['ikeer_rl', 'panaoso', 'trollantsb', 'makacagotica', '6Nssj6'] // Usuarios autorizados
 };
 
 let totalSeconds;
