@@ -1,83 +1,51 @@
-// Importamos Firebase desde un CDN público y gratuito
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-// !!! REEMPLAZA ESTO CON LOS DATOS DE TU PROPIO PROYECTO DE FIREBASE !!!
-const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_PROYECTO.firebaseapp.com",
-  databaseURL: "https://TU_PROYECTO-default-rtdb.firebaseio.com",
-  projectId: "TU_PROYECTO",
-  storageBucket: "TU_PROYECTO.appspot.com",
-  messagingSenderId: "TU_ID",
-  appId: "TU_APP_ID"
-};
-
-// Inicializamos Firebase
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const timerRef = ref(db, "sharedTimer");
-
+let totalSeconds;
 let interval;
-const display = document.getElementById("timer-display");
-const controls = document.getElementById("timer-controls");
 
-function formatTime(ms) {
-  if (ms <= 0) return "00:00:00";
-  const totalSeconds = Math.floor(ms / 1000);
-  const h = Math.floor(totalSeconds / 3600);
-  const m = Math.floor((totalSeconds % 3600) / 60);
-  const s = totalSeconds % 60;
+// Tu canal de Twitch (escríbelo en minúsculas)
+const TWITCH_CHANNEL = "TU_NOMBRE_DE_USUARIO"; 
 
-  return (
-    String(h).padStart(2, '0') + ":" +
-    String(m).padStart(2, '0') + ":" +
-    String(s).padStart(2, '0')
-  );
+// Formato más corto (MM:SS) ya que solo son 15 segundos
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return String(m).padStart(2, '0') + ":" + String(s).padStart(2, '0');
 }
 
-// Escuchar cambios en la Base de Datos (Esto se activa para TODO EL MUNDO en tiempo real)
-onValue(timerRef, (snapshot) => {
-  const data = snapshot.val();
-  clearInterval(interval);
+function startCountdown() {
+  clearInterval(interval); // Detiene cualquier cuenta anterior si se vuelve a activar
+  totalSeconds = 15; // Fijado a 15 segundos
 
-  if (!data || !data.endTime) {
-    display.textContent = "00:00:00";
-    controls.style.display = "block";
-    return;
-  }
-
-  const endTime = data.endTime;
+  const display = document.getElementById("timer-display");
+  display.textContent = formatTime(totalSeconds);
 
   interval = setInterval(() => {
-    const now = Date.now();
-    const timeLeft = endTime - now;
+    totalSeconds--;
 
-    if (timeLeft <= 0) {
+    if (totalSeconds < 0) {
       clearInterval(interval);
-      display.textContent = "00:00:00";
-      controls.style.display = "block"; // Volver a mostrar controles cuando termine
+      display.textContent = "00:00";
+      // Aquí puedes añadir un sonido o efecto cuando termine
       return;
     }
 
-    display.textContent = formatTime(timeLeft);
-    controls.style.display = "none"; // Ocultar controles mientras corra el timer
-  }, 200); // Se actualiza 5 veces por segundo para que vaya super suave
+    display.textContent = formatTime(totalSeconds);
+  }, 1000);
+}
+
+// Configuración de la conexión al chat de Twitch (Modo Lectura)
+const client = new tmi.Client({
+  options: { debug: false },
+  channels: [TWITCH_CHANNEL]
 });
 
-// Botón de inicio: cuando alguien pulsa, calcula el futuro y lo sube a Firebase
-document.getElementById("start-timer").addEventListener("click", () => {
-  const hours = parseInt(document.getElementById("input-hours").value) || 0;
-  const minutes = parseInt(document.getElementById("input-minutes").value) || 0;
-  const seconds = parseInt(document.getElementById("input-seconds").value) || 0;
+client.connect();
 
-  if (hours === 0 && minutes === 0 && seconds === 0) return;
+// Escuchar los mensajes del chat
+client.on('message', (channel, tags, message, self) => {
+  if (self) return; // Ignorar mensajes del propio bot si los hubiera
 
-  const totalMs = (hours * 3600 + minutes * 60 + seconds) * 1000;
-  const targetEndTime = Date.now() + totalMs;
-
-  // Guardamos en Firebase. Al hacer esto, el evento "onValue" se disparará en las pantallas de todos.
-  set(timerRef, {
-    endTime: targetEndTime
-  });
+  // Si alguien escribe exactamente "!timer" en el chat
+  if (message.toLowerCase().trim() === '!timer') {
+    startCountdown();
+  }
 });
