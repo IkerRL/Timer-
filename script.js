@@ -1,25 +1,23 @@
-// Tu configuración personalizada
+// Tu configuración optimizada (sin tokens problemáticos)
 const TWITCH_CONFIG = {
-    canal:   'makacagotica',       
-    // Limpiamos el token para dejar solo los caracteres (sin el "oauth:")
-    token:   'gbua2hu7qb50r6g8km5idwbkp6dxyo', 
-    nick:    'makacagotica',       
-    comando: '!timer',               
+    canal:   'makacagotica', // Tu canal en minúsculas
+    comando: '!voto',        // El comando que activará el timer
 };
 
 let totalSeconds;
 let interval;
 
+// Formatea el tiempo en MM:SS
 function formatTime(sec) {
   const m = Math.floor(sec / 60);
   const s = sec % 60;
   return String(m).padStart(2, '0') + ":" + String(s).padStart(2, '0');
 }
 
+// Función que inicia la cuenta atrás de 15 segundos
 function startCountdown() {
-  console.log("¡Iniciando el temporizador de 15 segundos!");
-  clearInterval(interval); 
-  totalSeconds = 15; 
+  clearInterval(interval); // Resetea si ya había un timer corriendo
+  totalSeconds = 15; // Ajustado a 15 segundos
 
   const display = document.getElementById("timer-display");
   display.textContent = formatTime(totalSeconds);
@@ -37,28 +35,23 @@ function startCountdown() {
   }, 1000);
 }
 
-// Configuración corregida para tmi.js
+// Configuración Anónima (Para que funcione siempre sin caídas de Token)
 const client = new tmi.Client({
-  options: { debug: true }, // Activamos el debug para ver qué pasa en la consola
-  identity: {
-    username: TWITCH_CONFIG.nick,
-    // Aseguramos que lleve el prefijo correcto internamente
-    password: `oauth:${TWITCH_CONFIG.token}` 
-  },
-  channels: [TWITCH_CONFIG.canal]
+  options: { debug: true },
+  channels: [TWITCH_CONFIG.canal] // Solo le decimos qué canal escuchar
 });
 
-// Conectar y avisar en consola
-client.connect()
-  .then(() => console.log(`%cConectado exitosamente al chat de ${TWITCH_CONFIG.canal}`, "color: green; font-weight: bold;"))
-  .catch(err => console.error("Error crítico al conectar a Twitch:", err));
+// Conectamos al chat de Twitch
+client.connect().catch(err => console.error("Error al conectar:", err));
 
-// Escuchar los mensajes del chat
+// Escuchar el chat en vivo
 client.on('message', (channel, tags, message, self) => {
-  console.log(`Mensaje recibido de ${tags['display-name']}: ${message}`);
+  // Pasamos el mensaje a minúsculas y quitamos espacios para evitar errores de escritura
+  const mensajeLimpio = message.toLowerCase().trim();
+  const comandoLimpio = TWITCH_CONFIG.comando.toLowerCase().trim();
 
-  // Compara el comando
-  if (message.toLowerCase().trim() === TWITCH_CONFIG.comando.toLowerCase()) {
+  // SI EL MENSAJE ES EL COMANDO, SE ACTIVA LA CUENTA ATRÁS
+  if (mensajeLimpio === comandoLimpio) {
     startCountdown();
   }
 });
