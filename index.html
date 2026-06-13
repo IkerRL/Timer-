@@ -1,20 +1,17 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Valorant Twitch Timer</title>
-  <link rel="stylesheet" href="styles.css">
-  <!-- Ya no necesitas tmi.js, el script se encarga de todo de forma nativa -->
-  <script src="script.js" defer></script>
-</head>
-<body>
+<link rel="stylesheet" href="styles.css">
+<script src="script.js" defer></script>
 
-  <div class="valorant-timer">
-
-    <div class="timer-display" id="timer-display">00:15</div>
-
+<div class="valorant-timer">
+  <div class="timer-header">
+    <span class="timer-title">Tiempo Restante</span>
   </div>
 
-</body>
-</html>
+  <div class="timer-display" id="timer-display">00:00:00</div>
+
+  <div class="timer-footer" id="timer-controls">
+    <label>Horas: <input type="number" id="input-hours" min="0" value="0"></label>
+    <label>Minutos: <input type="number" id="input-minutes" min="0" value="0"></label>
+    <label>Segundos: <input type="number" id="input-seconds" min="0" value="0"></label>
+    <button id="start-timer">Iniciar</button>
+  </div>
+</div>
